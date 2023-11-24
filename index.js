@@ -21,10 +21,27 @@ const client = new MongoClient(uri, {
   },
 });
 
+const subscribedCollection = client.db("vigorVista").collection("subscribe");
+
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+
+    app.post("/subscribe", async (req, res) => {
+      const user = req.body;
+      //checking existing users
+      const query = { email: user.email };
+      const existingUser = await subscribedCollection.findOne(query);
+      if (existingUser) {
+        return res.send({
+          message: "You have already subscribed",
+          insertedId: null,
+        });
+      }
+      const result = await subscribedCollection.insertOne(user);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -32,7 +49,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
