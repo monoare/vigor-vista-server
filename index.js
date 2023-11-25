@@ -78,9 +78,10 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/trainers", async (req, res) => {
-      const profile = req.body;
-      const result = await profileCollection.insertOne(profile);
+    app.post("/trainers/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await profileCollection.findOne(query);
       res.send(result);
     });
 
