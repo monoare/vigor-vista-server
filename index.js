@@ -23,6 +23,7 @@ const client = new MongoClient(uri, {
 
 const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
+const profileCollection = client.db("vigorVista").collection("profile");
 
 async function run() {
   try {
@@ -34,6 +35,7 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1d",
       });
+
       res.send(token);
     });
 
@@ -41,7 +43,7 @@ async function run() {
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
-      const existingUser = await usersCollection.find().toArray();
+      const existingUser = await usersCollection.findOne(query);
       if (existingUser) {
         return res.send({
           message: "User is already present",
@@ -49,6 +51,7 @@ async function run() {
         });
       }
       const result = await usersCollection.insertOne(user);
+      console.log(result);
       res.send(result);
     });
 
@@ -65,6 +68,19 @@ async function run() {
         });
       }
       const result = await subscribedCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // profile/trainer related
+
+    app.get("/trainers", async (req, res) => {
+      const result = await profileCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/trainers", async (req, res) => {
+      const profile = req.body;
+      const result = await profileCollection.insertOne(profile);
       res.send(result);
     });
 
