@@ -21,6 +21,7 @@ const client = new MongoClient(uri, {
   },
 });
 
+const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
 
 async function run() {
@@ -34,6 +35,21 @@ async function run() {
         expiresIn: "1d",
       });
       res.send(token);
+    });
+
+    // users related api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.find().toArray();
+      if (existingUser) {
+        return res.send({
+          message: "User is already present",
+          insertedId: null,
+        });
+      }
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
     });
 
     // subscription related api
