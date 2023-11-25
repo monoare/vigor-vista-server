@@ -27,6 +27,16 @@ async function run() {
   try {
     // await client.connect();
 
+    //jwt related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+      res.send(token);
+    });
+
+    // subscription related api
     app.post("/subscribe", async (req, res) => {
       const user = req.body;
       //checking existing users
