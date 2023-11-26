@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
 const profileCollection = client.db("vigorVista").collection("profile");
+const classesCollection = client.db("vigorVista").collection("classes");
 
 async function run() {
   try {
@@ -71,17 +72,23 @@ async function run() {
       res.send(result);
     });
 
-    // profile/trainer related
+    // profile/trainer related api
 
     app.get("/trainers", async (req, res) => {
       const result = await profileCollection.find().toArray();
       res.send(result);
     });
 
-    app.post("/trainers/:id", async (req, res) => {
+    app.get("/trainers/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await profileCollection.findOne(query);
+      res.send(result);
+    });
+
+    //class related api
+    app.get("/classes", async (req, res) => {
+      const result = await classesCollection.find().toArray();
       res.send(result);
     });
 
