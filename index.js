@@ -126,6 +126,18 @@ async function run() {
       res.json(updatedPost);
     });
 
+    // Update the down votes count in the database for the given postId
+    app.patch("/forums/:postId/downVote", async (req, res) => {
+      const postId = req.params.postId;
+      const updatedPost = await forumCollection.findOneAndUpdate(
+        { _id: new ObjectId(postId) },
+        { $inc: { downVote: -1 } }, // decrement the down votes count
+        { new: true } // Return the updated document
+      );
+      console.log(updatedPost);
+      res.json(updatedPost);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
