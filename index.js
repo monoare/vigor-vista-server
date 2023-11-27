@@ -25,6 +25,7 @@ const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
 const profileCollection = client.db("vigorVista").collection("profile");
 const classesCollection = client.db("vigorVista").collection("classes");
+const forumCollection = client.db("vigorVista").collection("forum");
 
 async function run() {
   try {
@@ -90,6 +91,20 @@ async function run() {
     app.get("/classes", async (req, res) => {
       const result = await classesCollection.find().toArray();
       res.send(result);
+    });
+
+    app.get("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classesCollection.findOne(query);
+      res.send(result);
+    });
+
+    // forum related api
+    app.get("/forums", async (req, res) => {
+      const count = await forumCollection.estimatedDocumentCount();
+      const result = await classesCollection.find().toArray();
+      res.send({ count, result });
     });
 
     // Send a ping to confirm a successful connection
