@@ -104,15 +104,26 @@ async function run() {
     app.get("/forums", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
-      console.log("Page:", page);
-      console.log("Size:", size);
+
       const count = await forumCollection.estimatedDocumentCount();
-      const result = await classesCollection
+      const result = await forumCollection
         .find()
         .skip(page * size)
         .limit(size)
         .toArray();
       res.send({ count, result });
+    });
+
+    // Update the up votes count in the database for the given postId
+    app.patch("/forums/:postId/upVote", async (req, res) => {
+      const postId = req.params.postId;
+      const updatedPost = await forumCollection.findOneAndUpdate(
+        { _id: new ObjectId(postId) },
+        { $inc: { upVote: 1 } }, // Increment the up votes count
+        { new: true } // Return the updated document
+      );
+      console.log(updatedPost);
+      res.json(updatedPost);
     });
 
     // Send a ping to confirm a successful connection
