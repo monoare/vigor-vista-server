@@ -102,8 +102,16 @@ async function run() {
 
     // forum related api
     app.get("/forums", async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      console.log("Page:", page);
+      console.log("Size:", size);
       const count = await forumCollection.estimatedDocumentCount();
-      const result = await classesCollection.find().toArray();
+      const result = await classesCollection
+        .find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send({ count, result });
     });
 
