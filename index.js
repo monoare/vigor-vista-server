@@ -73,6 +73,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/subscribe", async (req, res) => {
+      const result = await subscribedCollection.find().toArray();
+      res.send(result);
+    });
+
     // profile/trainer related api
 
     app.get("/trainers", async (req, res) => {
@@ -133,7 +138,7 @@ async function run() {
         { $inc: { upVote: 1 }, $push: { upVotedBy: email } }, // Increment the up votes count
         { new: true } // Return the updated document
       );
-      console.log(updatedPost);
+
       res.json(updatedPost);
     });
 
@@ -146,8 +151,6 @@ async function run() {
 
       const post = await forumCollection.findOne(query);
 
-      console.log(post);
-
       if (post.downVotedBy?.includes(email)) {
         return res
           .status(400)
@@ -159,7 +162,7 @@ async function run() {
         { $inc: { downVote: -1 }, $push: { downVotedBy: email } }, // decrement the down votes count
         { new: true } // Return the updated document
       );
-      console.log(updatedPost);
+
       res.json(updatedPost);
     });
 
