@@ -117,9 +117,20 @@ async function run() {
     // Update the up votes count in the database for the given postId
     app.patch("/forums/:postId/upVote", async (req, res) => {
       const postId = req.params.postId;
+      const email = req.body.email;
+      const query = { _id: new ObjectId(postId) };
+
+      const post = await forumCollection.findOne(query);
+
+      if (post.upVotedBy?.includes(email)) {
+        return res
+          .status(400)
+          .json({ error: "You have already voted this post." });
+      }
+
       const updatedPost = await forumCollection.findOneAndUpdate(
         { _id: new ObjectId(postId) },
-        { $inc: { upVote: 1 } }, // Increment the up votes count
+        { $inc: { upVote: 1 }, $push: { upVotedBy: email } }, // Increment the up votes count
         { new: true } // Return the updated document
       );
       console.log(updatedPost);
@@ -129,9 +140,23 @@ async function run() {
     // Update the down votes count in the database for the given postId
     app.patch("/forums/:postId/downVote", async (req, res) => {
       const postId = req.params.postId;
+      const email = req.body.email;
+      console.log(email);
+      const query = { _id: new ObjectId(postId) };
+
+      const post = await forumCollection.findOne(query);
+
+      console.log(post);
+
+      if (post.downVotedBy?.includes(email)) {
+        return res
+          .status(400)
+          .json({ error: "You have already voted this post." });
+      }
+
       const updatedPost = await forumCollection.findOneAndUpdate(
         { _id: new ObjectId(postId) },
-        { $inc: { downVote: -1 } }, // decrement the down votes count
+        { $inc: { downVote: -1 }, $push: { downVotedBy: email } }, // decrement the down votes count
         { new: true } // Return the updated document
       );
       console.log(updatedPost);
