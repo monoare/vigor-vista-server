@@ -40,6 +40,7 @@ const client = new MongoClient(uri, {
 const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
 const profileCollection = client.db("vigorVista").collection("profile");
+const beATrainerCollection = client.db("vigorVista").collection("beATrainer");
 const classesCollection = client.db("vigorVista").collection("classes");
 const forumCollection = client.db("vigorVista").collection("forum");
 
@@ -69,7 +70,7 @@ async function run() {
         });
       }
       const result = await usersCollection.insertOne(user);
-      console.log(result);
+
       res.send(result);
     });
 
@@ -92,6 +93,41 @@ async function run() {
     app.get("/subscribe", async (req, res) => {
       const result = await subscribedCollection.find().toArray();
       res.send(result);
+    });
+
+    // Be A Trainer API
+    app.post("/beTrainer", async (req, res) => {
+      const user = req.body;
+      const result = await beATrainerCollection.insertOne(user);
+
+      console.log(result);
+      res.send(result);
+    });
+
+    app.get("/beTrainer", async (req, res) => {
+      const result = await beATrainerCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.put("/beTrainer/:id", async (req, res) => {
+      console.log("Received PUT request");
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updatedDoc = {
+        status: req.body.status,
+      };
+
+      const updateResult = await beATrainerCollection.updateOne(
+        query,
+        {
+          $set: { updatedDoc },
+        },
+        options
+      );
+      console.log(updateResult);
+      res.send(updateResult);
     });
 
     // profile/trainer related api
