@@ -43,6 +43,8 @@ const profileCollection = client.db("vigorVista").collection("profile");
 const beATrainerCollection = client.db("vigorVista").collection("beATrainer");
 const classesCollection = client.db("vigorVista").collection("classes");
 const forumCollection = client.db("vigorVista").collection("forum");
+const paymentsCollection = client.db("vigorVista").collection("payments");
+const paidMembersCollection = client.db("vigorVista").collection("paidMembers");
 
 async function run() {
   try {
@@ -95,6 +97,13 @@ async function run() {
       res.send(result);
     });
 
+    // paid member apis
+    app.post("/paidMembers", async (req, res) => {
+      const paidMember = req.body;
+      const result = await paidMembersCollection.insertOne(paidMember);
+      res.send(result);
+    });
+
     // Be A Trainer API
     app.post("/beTrainer", async (req, res) => {
       const user = req.body;
@@ -110,24 +119,37 @@ async function run() {
     });
 
     app.put("/beTrainer/:id", async (req, res) => {
-      console.log("Received PUT request");
       const id = req.params.id;
+      const user = req.body;
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
 
       const updatedDoc = {
-        status: req.body.status,
+        $set: {
+          age: user?.age,
+          dayTime: user?.dayTime,
+          description: user?.description,
+          email: user?.email,
+          experience: user?.experience,
+          image: user?.image,
+          joiningDate: user?.joiningDate,
+          name: user?.name,
+          skills: user?.skills,
+          weekTime: user?.weekTime,
+          status: req.body.status,
+        },
       };
 
-      const updateResult = await beATrainerCollection.updateOne(
+      const updateResult = await profileCollection.updateOne(
         query,
-        {
-          $set: { updatedDoc },
-        },
+        updatedDoc,
         options
       );
+
+      const deleteResult = await beATrainerCollection.deleteOne(query);
       console.log(updateResult);
-      res.send(updateResult);
+      console.log(deleteResult);
+      res.send({ updateResult, deleteResult });
     });
 
     // profile/trainer related api
@@ -142,41 +164,6 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await profileCollection.findOne(query);
       res.send(result);
-    });
-
-    // payment
-    app.put("/trainers/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-
-        const payment = {
-          status: req.body.status,
-          price: req.body.price,
-        };
-
-        const options = { upsert: true };
-
-        const updateResult = await profileCollection.updateOne(
-          query,
-          {
-            $set: { payment },
-          },
-          options
-        );
-
-        console.log("Server response:", updateResult);
-
-        if (updateResult.modifiedCount > 0) {
-          // Successfully updated the payment status
-          res.sendStatus(200);
-        } else {
-          res.status(404).send("Trainer not found");
-        }
-      } catch (error) {
-        console.error("Error updating payment status:", error);
-        res.status(500).send("Internal Server Error");
-      }
     });
 
     //class related api
@@ -266,6 +253,54 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    // payment
+    app.put("/trainers/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+
+        const payment = {
+          status: req.body.status,
+          price: req.body.price,
+        };
+
+        const options = { upsert: true };
+
+        const updateResult = await profileCollection.updateOne(
+          query,
+          {
+            $set: { payment },
+          },
+          options
+        );
+
+        console.log("Server response:", updateResult);
+
+        if (updateResult.modifiedCount > 0) {
+          // Successfully updated the payment status
+          res.sendStatus(200);
+        } else {
+          res.status(404).send("Trainer not found");
+        }
+      } catch (error) {
+        console.error("Error updating payment status:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    // Admin pay info API
+    app.post("/payments", async (req, res) => {
+      console.log("Get the response");
+      const payment = req.body;
+      const paymentResult = await paymentsCollection.insertOne(payment);
+      res.send(paymentResult);
+    });
+
+    app.get("/payments", async (req, res) => {
+      const paymentResult = await paymentsCollection.find().toArray();
+      res.send(paymentResult);
     });
 
     // Send a ping to confirm a successful connection
