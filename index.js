@@ -11,21 +11,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const verifyToken = (req, res, next) => {
-  // console.log('inside verify token', req.headers.authorization);
-  if (!req.headers.authorization) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-  const token = req.headers.authorization.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).send({ message: "unauthorized access" });
-    }
-    req.decoded = decoded;
-    next();
-  });
-};
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qfcfzds.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -59,6 +44,22 @@ async function run() {
 
       res.send(token);
     });
+
+    // middlewares
+    const verifyToken = (req, res, next) => {
+      // console.log('inside verify token', req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "unauthorized access" });
+        }
+        req.decoded = decoded;
+        next();
+      });
+    };
 
     // users related api
     app.post("/users", async (req, res) => {
@@ -101,6 +102,12 @@ async function run() {
     app.post("/paidMembers", async (req, res) => {
       const paidMember = req.body;
       const result = await paidMembersCollection.insertOne(paidMember);
+      res.send(result);
+    });
+
+    // paid member apis
+    app.get("/paidMembers", async (req, res) => {
+      const result = await paidMembersCollection.find().toArray();
       res.send(result);
     });
 
@@ -164,6 +171,18 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await profileCollection.findOne(query);
       res.send(result);
+    });
+
+    app.get("/trainers/train/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const user = await profileCollection.findOne(query);
+      res.send(user);
     });
 
     //class related api
