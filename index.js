@@ -99,7 +99,7 @@ async function run() {
     });
 
     // paid member apis
-    app.post("/paidMembers", async (req, res) => {
+    app.post("/paidMembers", verifyToken, async (req, res) => {
       const paidMember = req.body;
       const result = await paidMembersCollection.insertOne(paidMember);
       res.send(result);
@@ -115,8 +115,7 @@ async function run() {
     app.post("/beTrainer", async (req, res) => {
       const user = req.body;
       const result = await beATrainerCollection.insertOne(user);
-
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -186,6 +185,13 @@ async function run() {
     });
 
     //class related api
+
+    app.post("/classes", async (req, res) => {
+      const user = req.body;
+      const result = await classesCollection.insertOne(user);
+      res.send(result);
+    });
+
     app.get("/classes", async (req, res) => {
       const result = await classesCollection.find().toArray();
       res.send(result);
@@ -212,7 +218,7 @@ async function run() {
       res.send({ count, result });
     });
 
-    app.post("/forums", async (req, res) => {
+    app.post("/forums", verifyToken, async (req, res) => {
       const forum = req.body;
       const result = await forumCollection.insertOne(forum);
       res.send(result);
