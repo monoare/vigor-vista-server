@@ -91,6 +91,35 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/users/update/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      console.log("patch Email", email);
+      const userUpdates = req.body;
+
+      // Ensure the user making the request matches the email in the URL
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+
+      const query = { email: email };
+      const options = { upsert: true };
+
+      const updatedDoc = {
+        $set: {
+          name: userUpdates.name,
+          photoURL: userUpdates.photoURL,
+        },
+      };
+
+      console.log(updatedDoc);
+      const updateResult = await usersCollection.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(updateResult);
+    });
+
     // subscription related api
     app.post("/subscribe", async (req, res) => {
       const user = req.body;
