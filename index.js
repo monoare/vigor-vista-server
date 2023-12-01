@@ -77,6 +77,20 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/member/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      // console.log(result);
+      res.send(result);
+    });
+
     // subscription related api
     app.post("/subscribe", async (req, res) => {
       const user = req.body;
