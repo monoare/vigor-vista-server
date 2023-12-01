@@ -79,7 +79,7 @@ async function run() {
 
     app.get("/users/member/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
 
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: "forbidden access" });
@@ -119,9 +119,17 @@ async function run() {
       res.send(result);
     });
 
-    // paid member apis
     app.get("/paidMembers", async (req, res) => {
       const result = await paidMembersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/paidMembers/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      // console.log(query);
+      const result = await paidMembersCollection.findOne(query);
+      // console.log(result);
       res.send(result);
     });
 
