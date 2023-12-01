@@ -198,7 +198,7 @@ async function run() {
       res.send(result);
     });
 
-    // forum related api
+    // forum related apis
     app.get("/forums", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
@@ -210,6 +210,12 @@ async function run() {
         .limit(size)
         .toArray();
       res.send({ count, result });
+    });
+
+    app.post("/forums", async (req, res) => {
+      const forum = req.body;
+      const result = await forumCollection.insertOne(forum);
+      res.send(result);
     });
 
     // Update the up votes count in the database for the given postId
