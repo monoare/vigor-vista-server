@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 
 const usersCollection = client.db("vigorVista").collection("users");
 const subscribedCollection = client.db("vigorVista").collection("subscribe");
+const photoCollection = client.db("vigorVista").collection("gallery");
 const profileCollection = client.db("vigorVista").collection("profile");
 const beATrainerCollection = client.db("vigorVista").collection("beATrainer");
 const classesCollection = client.db("vigorVista").collection("classes");
@@ -254,6 +255,19 @@ async function run() {
       const result = await classesCollection.findOne(query);
       res.send(result);
     });
+    app.get("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classesCollection.findOne(query);
+      res.send(result);
+    });
+
+    // app.get("/classes/:duration", async (req, res) => {
+    //   const duration = req.params.duration;
+    //   const query = { duration: duration };
+    //   const result = await classesCollection.find(query).toArray();
+    //   res.send(result);
+    // });
 
     // forum related apis
     app.get("/forums", async (req, res) => {
@@ -272,6 +286,12 @@ async function run() {
     app.post("/forums", verifyToken, async (req, res) => {
       const forum = req.body;
       const result = await forumCollection.insertOne(forum);
+      res.send(result);
+    });
+
+    //gallery api
+    app.get("/pictures", async (req, res) => {
+      const result = await photoCollection.find().toArray();
       res.send(result);
     });
 
