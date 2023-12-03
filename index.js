@@ -27,7 +27,7 @@ const subscribedCollection = client.db("vigorVista").collection("subscribe");
 const photoCollection = client.db("vigorVista").collection("gallery");
 const profileCollection = client.db("vigorVista").collection("profile");
 const beATrainerCollection = client.db("vigorVista").collection("beATrainer");
-const classesCollection = client.db("vigorVista").collection("classes");
+const classesCollection = client.db("vigorVista").collection("newClasses");
 const forumCollection = client.db("vigorVista").collection("forum");
 const paymentsCollection = client.db("vigorVista").collection("payments");
 const paidMembersCollection = client.db("vigorVista").collection("paidMembers");
@@ -94,7 +94,7 @@ async function run() {
 
     app.patch("/users/update/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
-      console.log("patch Email", email);
+      // console.log("patch Email", email);
       const userUpdates = req.body;
 
       // Ensure the user making the request matches the email in the URL
@@ -109,6 +109,26 @@ async function run() {
         $set: {
           name: userUpdates.name,
           photoURL: userUpdates.photoURL,
+        },
+      };
+
+      console.log(updatedDoc);
+      const updateResult = await usersCollection.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(updateResult);
+    });
+
+    app.patch("/users/updateStatus/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const options = { upsert: true };
+
+      const updatedDoc = {
+        $set: {
+          status: "Trainer",
         },
       };
 
@@ -158,7 +178,7 @@ async function run() {
       const email = req.params.email;
       const query = { userEmail: email };
       // console.log(query);
-      const result = await paidMembersCollection.findOne(query);
+      const result = await paidMembersCollection.find(query).toArray();
       // console.log(result);
       res.send(result);
     });
@@ -173,6 +193,14 @@ async function run() {
 
     app.get("/beTrainer", async (req, res) => {
       const result = await beATrainerCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/beTrainer/reject/:trainerId", async (req, res) => {
+      const id = req.params.trainerId;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await beATrainerCollection.findOne(query);
       res.send(result);
     });
 
@@ -249,12 +277,6 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/classes/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await classesCollection.findOne(query);
-      res.send(result);
-    });
     app.get("/classes/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
